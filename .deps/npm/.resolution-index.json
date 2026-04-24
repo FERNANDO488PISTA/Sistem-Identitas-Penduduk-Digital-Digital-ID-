@@ -1,0 +1,10 @@
+{
+  "SistemIdentitasPendudukDigital.sol": {
+    "__sources__": {
+      "SistemIdentitasPendudukDigital.sol": {
+        "content": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.0;\r\n\r\ncontract DigitalID {\r\n\r\n    struct Identity {\r\n        string nik;\r\n        string nama;\r\n    }\r\n\r\n    // address → data lengkap (auto getter)\r\n    mapping(address => Identity) public identities;\r\n\r\n    // NIK → nama\r\n    mapping(string => string) public nikToName;\r\n\r\n    // nama → NIK\r\n    mapping(string => string) public nameToNik;\r\n\r\n    // 📝 REGISTER\r\n    function register(address user, string memory nik, string memory nama) public {\r\n        identities[user] = Identity(nik, nama);\r\n\r\n        nikToName[nik] = nama;\r\n        nameToNik[nama] = nik;\r\n    }\r\n\r\n    // ✅ VERIFY\r\n    function verify(address user, string memory nik, string memory nama) public view returns (bool) {\r\n        return keccak256(abi.encodePacked(nik, nama)) ==\r\n               keccak256(abi.encodePacked(identities[user].nik, identities[user].nama));\r\n    }\r\n\r\n    // 🔍 CEK TERDAFTAR\r\n    function isRegistered(address user) public view returns (bool) {\r\n        return bytes(identities[user].nik).length != 0;\r\n    }\r\n}",
+        "file": "SistemIdentitasPendudukDigital.sol"
+      }
+    }
+  }
+}
