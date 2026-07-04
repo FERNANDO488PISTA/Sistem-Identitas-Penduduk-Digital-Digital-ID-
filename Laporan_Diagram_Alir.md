@@ -3,123 +3,175 @@
 
 ---
 
-## 1. FUNGSI: `register(address user, string nik, string nama)`
-
-### 🔷 Diagram Alir
+## KETERANGAN SIMBOL DIAGRAM ALIR (Standar ISO 5807)
 
 ```
-┌─────────────────────────────────┐
-│           M A S U K A N         │
-├─────────────────────────────────┤
-│  • address user  (alamat wallet)│
-│  • string  nik   (Nomor Induk   │
-│                   Kependudukan) │
-│  • string  nama  (Nama lengkap) │
-└────────────┬────────────────────┘
-             │
-             ▼
-┌─────────────────────────────────┐
-│            P R O S E S          │
-├─────────────────────────────────┤
-│  1. Simpan Identity{nik, nama}  │
-│     ke mapping identities[user] │
-│                                 │
-│  2. Simpan nikToName[nik] = nama│
-│                                 │
-│  3. Simpan nameToNik[nama] = nik│
-└────────────┬────────────────────┘
-             │
-             ▼
-┌─────────────────────────────────┐
-│           K E L U A R A N       │
-├─────────────────────────────────┤
-│  • Data identitas tersimpan     │
-│    di blockchain (state update) │
-│  • Mapping NIK ↔ Nama aktif     │
-└─────────────────────────────────┘
+  ( )        = Terminal / Terminator  → Mulai / Selesai
+ /   /       = Parallelogram          → Input / Output
+[     ]      = Persegi Panjang        → Proses
+  < >        = Belah Ketupat          → Keputusan / Decision
+   ↓         = Anak Panah             → Arah Aliran
+```
+
+---
+
+## 1. FUNGSI: `register(address user, string nik, string nama)`
+
+```
+                    ╭─────────╮
+                    │  MULAI  │
+                    ╰────┬────╯
+                         │
+                         ▼
+               ╔═════════════════════╗
+               ║  INPUT:             ║
+               ║  - address user     ║
+               ║  - string nik       ║
+               ║  - string nama      ║
+               ╚═════════╤═══════════╝
+                         │
+                         ▼
+               ┌─────────────────────┐
+               │ Simpan data ke      │
+               │ identities[user]    │
+               │ = Identity{nik,nama}│
+               └─────────┬───────────┘
+                         │
+                         ▼
+               ┌─────────────────────┐
+               │ Simpan              │
+               │ nikToName[nik]=nama │
+               └─────────┬───────────┘
+                         │
+                         ▼
+               ┌─────────────────────┐
+               │ Simpan              │
+               │ nameToNik[nama]=nik │
+               └─────────┬───────────┘
+                         │
+                         ▼
+               ╔═════════════════════╗
+               ║  OUTPUT:            ║
+               ║  Data identitas     ║
+               ║  tersimpan di       ║
+               ║  blockchain         ║
+               ╚═════════╤═══════════╝
+                         │
+                         ▼
+                    ╭─────────╮
+                    │ SELESAI │
+                    ╰─────────╯
 ```
 
 ---
 
 ## 2. FUNGSI: `verify(address user, string nik, string nama)`
 
-### 🔷 Diagram Alir
-
 ```
-┌─────────────────────────────────┐
-│           M A S U K A N         │
-├─────────────────────────────────┤
-│  • address user  (alamat wallet)│
-│  • string  nik   (NIK klaim)    │
-│  • string  nama  (Nama klaim)   │
-└────────────┬────────────────────┘
-             │
-             ▼
-┌─────────────────────────────────┐
-│            P R O S E S          │
-├─────────────────────────────────┤
-│  1. Ambil identities[user]      │
-│     dari blockchain             │
-│                                 │
-│  2. Hash keccak256(nik + nama)  │
-│     dari INPUT                  │
-│                                 │
-│  3. Hash keccak256(nik + nama)  │
-│     dari DATA TERSIMPAN         │
-│                                 │
-│  4. Bandingkan kedua hash       │
-│     ┌──────────┬──────────┐     │
-│     │  SAMA ?  │ BERBEDA? │     │
-│     │  → true  │ → false  │     │
-│     └──────────┴──────────┘     │
-└────────────┬────────────────────┘
-             │
-             ▼
-┌─────────────────────────────────┐
-│           K E L U A R A N       │
-├─────────────────────────────────┤
-│  • bool true  → Identitas VALID │
-│  • bool false → Identitas TIDAK │
-│                 VALID           │
-└─────────────────────────────────┘
+                    ╭─────────╮
+                    │  MULAI  │
+                    ╰────┬────╯
+                         │
+                         ▼
+               ╔═════════════════════╗
+               ║  INPUT:             ║
+               ║  - address user     ║
+               ║  - string nik       ║
+               ║  - string nama      ║
+               ╚═════════╤═══════════╝
+                         │
+                         ▼
+               ┌─────────────────────┐
+               │ Ambil data dari     │
+               │ identities[user]    │
+               │ (baca blockchain)   │
+               └─────────┬───────────┘
+                         │
+                         ▼
+               ┌─────────────────────┐
+               │ Hitung:             │
+               │ H1 = keccak256      │
+               │ (nik + nama) INPUT  │
+               └─────────┬───────────┘
+                         │
+                         ▼
+               ┌─────────────────────┐
+               │ Hitung:             │
+               │ H2 = keccak256      │
+               │ (nik + nama) STORED │
+               └─────────┬───────────┘
+                         │
+                         ▼
+                  ◇─────────────────◇
+                 ◇   H1  ==  H2 ?    ◇
+                  ◇─────────────────◇
+                  /                  \
+                YA                   TIDAK
+                 │                     │
+                 ▼                     ▼
+       ╔══════════════╗      ╔══════════════════╗
+       ║ OUTPUT:      ║      ║ OUTPUT:          ║
+       ║ return true  ║      ║ return false     ║
+       ║ (VALID)      ║      ║ (TIDAK VALID)    ║
+       ╚══════╤═══════╝      ╚════════╤═════════╝
+              │                       │
+              └──────────┬────────────┘
+                         │
+                         ▼
+                    ╭─────────╮
+                    │ SELESAI │
+                    ╰─────────╯
 ```
 
 ---
 
 ## 3. FUNGSI: `isRegistered(address user)`
 
-### 🔷 Diagram Alir
-
 ```
-┌─────────────────────────────────┐
-│           M A S U K A N         │
-├─────────────────────────────────┤
-│  • address user  (alamat wallet)│
-└────────────┬────────────────────┘
-             │
-             ▼
-┌─────────────────────────────────┐
-│            P R O S E S          │
-├─────────────────────────────────┤
-│  1. Ambil identities[user].nik  │
-│     dari blockchain             │
-│                                 │
-│  2. Konversi ke bytes           │
-│                                 │
-│  3. Cek panjang bytes           │
-│     ┌──────────┬──────────┐     │
-│     │ length≠0 │ length=0 │     │
-│     │  →  true │ → false  │     │
-│     └──────────┴──────────┘     │
-└────────────┬────────────────────┘
-             │
-             ▼
-┌─────────────────────────────────┐
-│           K E L U A R A N       │
-├─────────────────────────────────┤
-│  • bool true  → Sudah TERDAFTAR │
-│  • bool false → Belum TERDAFTAR │
-└─────────────────────────────────┘
+                    ╭─────────╮
+                    │  MULAI  │
+                    ╰────┬────╯
+                         │
+                         ▼
+               ╔═════════════════════╗
+               ║  INPUT:             ║
+               ║  - address user     ║
+               ╚═════════╤═══════════╝
+                         │
+                         ▼
+               ┌─────────────────────┐
+               │ Ambil               │
+               │ identities[user].nik│
+               │ dari blockchain     │
+               └─────────┬───────────┘
+                         │
+                         ▼
+               ┌─────────────────────┐
+               │ Konversi nik        │
+               │ ke tipe bytes       │
+               └─────────┬───────────┘
+                         │
+                         ▼
+                  ◇─────────────────◇
+                 ◇  bytes(nik).      ◇
+                 ◇  length != 0 ?    ◇
+                  ◇─────────────────◇
+                  /                  \
+                YA                   TIDAK
+                 │                     │
+                 ▼                     ▼
+       ╔══════════════╗      ╔══════════════════╗
+       ║ OUTPUT:      ║      ║ OUTPUT:          ║
+       ║ return true  ║      ║ return false     ║
+       ║ (TERDAFTAR)  ║      ║ (BLM TERDAFTAR)  ║
+       ╚══════╤═══════╝      ╚════════╤═════════╝
+              │                       │
+              └──────────┬────────────┘
+                         │
+                         ▼
+                    ╭─────────╮
+                    │ SELESAI │
+                    ╰─────────╯
 ```
 
 ---
@@ -127,54 +179,69 @@
 ## 4. DIAGRAM ALIR SISTEM KESELURUHAN
 
 ```
-         [MULAI]
-            │
-            ▼
-   ┌─────────────────┐
-   │  Input: address,│
-   │  NIK, Nama      │
-   └────────┬────────┘
-            │
-            ▼
-   ┌─────────────────────┐
-   │ isRegistered(user)? │
-   └──────┬──────────────┘
-          │
-    ┌─────┴──────┐
-    │ TIDAK      │ YA
-    ▼            ▼
-┌────────┐  ┌──────────────┐
-│register│  │ verify(user, │
-│(user,  │  │  nik, nama)  │
-│nik,    │  └──────┬───────┘
-│nama)   │         │
-└───┬────┘   ┌─────┴──────┐
-    │        │ true/false │
-    ▼        └─────┬──────┘
-┌────────┐         │
-│ Data   │         ▼
-│Tersim- │  ┌─────────────┐
-│pan di  │  │ Output:     │
-│Blockch.│  │ Status Valid│
-└───┬────┘  └──────┬──────┘
-    │              │
-    └──────┬───────┘
-           ▼
-        [SELESAI]
+                    ╭─────────╮
+                    │  MULAI  │
+                    ╰────┬────╯
+                         │
+                         ▼
+               ╔═════════════════════╗
+               ║  INPUT:             ║
+               ║  - address user     ║
+               ║  - string nik       ║
+               ║  - string nama      ║
+               ╚═════════╤═══════════╝
+                         │
+                         ▼
+                  ◇─────────────────◇
+                 ◇  isRegistered     ◇
+                 ◇    (user) ?       ◇
+                  ◇─────────────────◇
+                  /                  \
+               TIDAK                 YA
+                 │                    │
+                 ▼                    ▼
+       ┌──────────────────┐  ┌──────────────────┐
+       │ Panggil          │  │ Panggil          │
+       │ register(user,   │  │ verify(user,     │
+       │  nik, nama)      │  │  nik, nama)      │
+       └────────┬─────────┘  └────────┬─────────┘
+                │                     │
+                ▼                     ▼
+       ┌──────────────────┐    ◇─────────────◇
+       │ Data identitas   │   ◇  Hasil verify ◇
+       │ tersimpan di     │   ◇  == true ?    ◇
+       │ blockchain       │    ◇─────────────◇
+       └────────┬─────────┘    /             \
+                │            YA              TIDAK
+                │             │               │
+                │             ▼               ▼
+                │   ╔═══════════════╗ ╔═══════════════╗
+                │   ║ OUTPUT:       ║ ║ OUTPUT:       ║
+                │   ║ Identitas     ║ ║ Identitas     ║
+                │   ║ VALID ✓       ║ ║ TIDAK VALID ✗ ║
+                │   ╚═══════╤═══════╝ ╚═══════╤═══════╝
+                │           │                 │
+                └─────┬─────┘                 │
+                      └──────────┬────────────┘
+                                 │
+                                 ▼
+                            ╭─────────╮
+                            │ SELESAI │
+                            ╰─────────╯
 ```
 
 ---
 
 ## 5. RINGKASAN TABEL INPUT → PROSES → OUTPUT
 
-| Fungsi        | Masukan                        | Proses                                      | Keluaran                        |
-|---------------|--------------------------------|---------------------------------------------|---------------------------------|
-| `register`    | address, NIK, Nama             | Simpan ke mapping identities, nikToName, nameToNik | State blockchain terupdate |
-| `verify`      | address, NIK, Nama             | Hash & bandingkan data klaim vs data simpan | `bool` true / false             |
-| `isRegistered`| address                        | Cek panjang bytes NIK di mapping            | `bool` true / false             |
-| `identities`  | address                        | Auto-getter mapping                         | struct {nik, nama}              |
-| `nikToName`   | NIK (string)                   | Auto-getter mapping                         | Nama (string)                   |
-| `nameToNik`   | Nama (string)                  | Auto-getter mapping                         | NIK (string)                    |
+| Fungsi | Masukan | Proses | Keluaran |
+|---|---|---|---|
+| `register` | address, NIK, Nama | Simpan ke 3 mapping di blockchain | State blockchain terupdate |
+| `verify` | address, NIK, Nama | Hash keccak256 & bandingkan | `bool` true / false |
+| `isRegistered` | address | Cek panjang bytes NIK | `bool` true / false |
+| `identities` | address | Auto-getter mapping | struct {nik, nama} |
+| `nikToName` | NIK (string) | Auto-getter mapping | Nama (string) |
+| `nameToNik` | Nama (string) | Auto-getter mapping | NIK (string) |
 
 ---
 
